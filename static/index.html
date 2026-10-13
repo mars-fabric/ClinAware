@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ClinAware</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   ARC Design System tokens — dark (default) + light override
+   ============================================================ */
+:root {
+  /* Base palette (dark, default) */
+  --color-bg: #000000;
+  --color-surface: #151632;
+  --color-elevated: #2C2C2C;
+  --color-primary: #4D36C4;
+  --color-primary-hover: #5c42e0;
+  --color-secondary-surface: #252557;
+  --color-accent: #38bdf8;
+  --color-fg: #e2e8f0;
+  --color-fg-inverse: #ffffff;
+  --color-muted-fg: #64748b;
+  --color-panel-alt: #1a1d28;
+  --color-panel-dark: #12141c;
+
+  /* Agent semantic colors — reserved for status meaning only */
+  --color-agent-progress: #FFB900;
+  --color-agent-progress-bg: rgba(245,158,11,0.13);
+  --color-agent-progress-border: rgba(245,158,11,0.33);
+
+  --color-agent-tool: #06b6d4;
+  --color-agent-tool-bg: rgba(6,182,212,0.13);
+  --color-agent-tool-border: rgba(6,182,212,0.33);
+
+  --color-agent-memory: #a78bfa;
+  --color-agent-memory-bg: rgba(167,139,250,0.13);
+  --color-agent-memory-border: rgba(167,139,250,0.33);
+
+  --color-agent-error: #FF6467;
+  --color-agent-error-bg: rgba(255,100,103,0.2);
+  --color-agent-error-border: rgba(255,100,103,0.5);
+  --color-error-text: #f87171;
+  --color-error-banner-bg: rgba(248,113,113,0.04);
+  --color-error-banner-border: rgba(248,113,113,0.2);
+  --color-error-pill-bg: rgba(248,113,113,0.13);
+
+  --color-agent-success: #00D492;
+  --color-agent-success-bg: rgba(16,185,129,0.13);
+  --color-agent-success-border: rgba(16,185,129,0.33);
+
+  --color-info-text: #a78bfa;
+  --color-info-banner-bg: rgba(167,139,250,0.06);
+  --color-info-banner-border: rgba(167,139,250,0.25);
+  --color-info-pill-bg: rgba(167,139,250,0.13);
+
+  /* Categorical (non-semantic) colors reserved for the 3 enhancement methods */
+  --method-baseline: #38bdf8;
+  --method-baseline-bg: rgba(56,189,248,0.16);
+  --method-baseline-border: rgba(56,189,248,0.4);
+
+  --method-aggressive: #fb923c;
+  --method-aggressive-bg: rgba(251,146,60,0.16);
+  --method-aggressive-border: rgba(251,146,60,0.4);
+
+  --method-demucs: #e879f9;
+  --method-demucs-bg: rgba(232,121,249,0.16);
+  --method-demucs-border: rgba(232,121,249,0.4);
+
+  /* Borders */
+  --border-hairline: rgba(255,255,255,0.07);
+  --border-hairline-strong: rgba(255,255,255,0.12);
+
+  /* Radii */
+  --radius-panel: 16px;
+  --radius-pill: 12px;
+  --radius-full: 9999px;
+
+  /* Spacing */
+  --space-panel-padding: 24.8px;
+  --space-gap-sm: 12px;
+  --space-gap-md: 16px;
+  --space-gap-lg: 24px;
+
+  /* Fonts */
+  --font-ui: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Shadows */
+  --shadow-panel: 0 10px 30px rgba(0, 0, 0, 0.35);
+  --shadow-panel-hover: 0 20px 45px rgba(0, 0, 0, 0.45);
+
+  /* Frame used to host light-background spectrogram PNGs on a dark card */
+  --spec-frame-bg: #f1f5f9;
+  --spec-frame-border: rgba(15, 23, 42, 0.08);
+}
+
+/* ---- Light theme override ---- */
+[data-theme="light"] {
+  --color-bg: #f4f5fb;
+  --color-surface: #ffffff;
+  --color-elevated: #eef0f7;
+  --color-panel-dark: #ffffff;
+  --color-panel-alt: #eef0f7;
+  --color-fg: #14162a;
+  --color-fg-inverse: #14162a;
+  --color-muted-fg: #5b6178;
+  --border-hairline: rgba(15, 23, 42, 0.08);
+  --border-hairline-strong: rgba(15, 23, 42, 0.14);
+  --shadow-panel: 0 8px 24px rgba(30, 32, 60, 0.08);
+  --shadow-panel-hover: 0 16px 36px rgba(30, 32, 60, 0.12);
+  --spec-frame-bg: #f8fafc;
+  --spec-frame-border: rgba(15, 23, 42, 0.1);
+  --color-info-banner-bg: rgba(124, 92, 252, 0.07);
+  --color-info-banner-border: rgba(124, 92, 252, 0.22);
+  --color-secondary-surface: #e4e6f7;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: dark;
+}
+[data-theme="light"] {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  padding: 24px;
+  font-family: var(--font-ui);
+  background: var(--color-bg);
+  color: var(--color-fg);
+  min-height: 100vh;
+  transition: background 0.25s ease, color 0.25s ease;
+}
+
+.page {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+/* ============================================================
+   Top bar
+   ============================================================ */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-gap-md);
+  padding: 14px 20px;
+  margin-bottom: var(--space-gap-lg);
+  background: var(--color-panel-dark);
+  border: 0.8px solid var(--border-hairline);
+  border-radius: var(--radius-panel);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-mark {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.brand-mark svg {
+  width: 22px;
+  height: 22px;
+  display: block;
+}
+
+.brand-text h1 {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--color-fg);
+}
+
+.brand-text .wordmark-sub {
+  margin: 1px 0 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-muted-fg);
+}
+
+.theme-toggle {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-pill);
+  border: 0.8px solid var(--border-hairline-strong);
+  background: var(--color-elevated);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+  color: var(--color-fg);
+}
+
+.theme-toggle:hover {
+  border-color: var(--color-accent);
+  transform: translateY(-1px);
+}
+
+.theme-toggle svg {
+  width: 20px;
+  height: 20px;
+  position: absolute;
+  transition: opacity 0.25s ease, transform 0.35s ease;
+}
+
+.theme-toggle .icon-sun {
+  opacity: 0;
+  transform: rotate(-90deg) scale(0.6);
+}
+.theme-toggle .icon-moon {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+
+[data-theme="light"] .theme-toggle .icon-sun {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+[data-theme="light"] .theme-toggle .icon-moon {
+  opacity: 0;
+  transform: rotate(90deg) scale(0.6);
+}
+
+/* ---- Header copy (subtitle + disclaimer) ---- */
+.page-intro {
+  margin-bottom: var(--space-gap-lg);
+}
+
+.page-intro .subtitle {
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--color-muted-fg);
+  margin: 0 0 14px;
+  max-width: 78ch;
+}
+
+.disclaimer {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  background: var(--color-info-banner-bg);
+  border: 0.8px solid var(--color-info-banner-border);
+  border-radius: var(--radius-panel);
+  padding: 14px 16px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--color-fg);
+}
+
+.disclaimer .disclaimer-icon {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  color: var(--color-info-text);
+  margin-top: 1px;
+}
+
+.disclaimer strong {
+  color: var(--color-info-text);
+  font-weight: 600;
+}
+
+/* ============================================================
+   Cards / panels
+   ============================================================ */
+.card {
+  background: var(--color-panel-dark);
+  border: 0.8px solid var(--border-hairline);
+  border-radius: var(--radius-panel);
+  padding: var(--space-panel-padding);
+  box-shadow: var(--shadow-panel);
+  margin-bottom: var(--space-gap-lg);
+  transition: box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+}
+
+.card h2 {
+  margin: 0 0 20px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-fg);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card h2 .h2-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--color-accent);
+  flex-shrink: 0;
+}
+
+/* Upload section */
+.upload-section {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.upload-section label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-fg);
+}
+
+input[type="file"] {
+  padding: 10px 14px;
+  border: 0.8px solid var(--border-hairline-strong);
+  background: var(--color-elevated);
+  color: var(--color-fg);
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  font-family: var(--font-ui);
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+input[type="file"]::file-selector-button {
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 7px 12px;
+  margin-right: 10px;
+  background: var(--color-secondary-surface);
+  color: var(--color-fg);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+input[type="file"]:hover {
+  border-color: var(--color-accent);
+}
+
+/* Input divider */
+.input-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0 16px;
+  color: var(--color-muted-fg);
+  font-size: 11.5px;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.input-divider::before,
+.input-divider::after {
+  content: '';
+  flex: 1;
+  height: 0.8px;
+  background: var(--border-hairline);
+}
+
+/* Record section */
+.record-section {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.record-section label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-fg);
+}
+
+/* Record button states */
+button.record {
+  background: var(--color-elevated);
+  color: var(--color-fg);
+  border: 0.8px solid var(--border-hairline-strong);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+button.record:hover {
+  border-color: #ef4444;
+  color: #ef4444;
+  transform: translateY(-1px);
+}
+
+button.record.recording {
+  background: rgba(239,68,68,0.15);
+  border-color: rgba(239,68,68,0.6);
+  color: #ef4444;
+  box-shadow: 0 0 0 0 rgba(239,68,68,0.5);
+  animation: pulse-border 1.4s ease-out infinite;
+}
+
+@keyframes pulse-border {
+  0%   { box-shadow: 0 0 0 0 rgba(239,68,68,0.5); }
+  70%  { box-shadow: 0 0 0 8px rgba(239,68,68,0); }
+  100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+}
+
+.rec-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #ef4444;
+  display: none;
+  flex-shrink: 0;
+}
+
+button.recording .rec-dot {
+  display: block;
+  animation: blink 1s step-start infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+.rec-timer {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: #ef4444;
+  display: none;
+  min-width: 40px;
+}
+
+.rec-timer.active {
+  display: inline;
+}
+
+/* Noise toggle switch */
+.noise-toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 0.8px solid var(--border-hairline);
+}
+
+.noise-toggle-row label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-fg);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 42px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.switch-track {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background: var(--color-elevated);
+  border: 0.8px solid var(--border-hairline-strong);
+  border-radius: var(--radius-full);
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.switch-track::before {
+  content: '';
+  position: absolute;
+  height: 16px;
+  width: 16px;
+  left: 3px;
+  bottom: 3px;
+  background: var(--color-fg-inverse);
+  border-radius: 50%;
+  transition: transform 0.2s ease;
+}
+
+.switch input:checked + .switch-track {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.switch input:checked + .switch-track::before {
+  transform: translateX(18px);
+}
+
+.noise-toggle-hint {
+  font-size: 11.5px;
+  color: var(--color-muted-fg);
+  font-family: var(--font-mono);
+}
+
+/* Buttons */
+button {
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 11px 24px;
+  font-weight: 600;
+  font-family: var(--font-ui);
+  cursor: pointer;
+  font-size: 13.5px;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease, opacity 0.2s ease;
+}
+
+button.primary {
+  background: linear-gradient(135deg, var(--color-primary) 0%, #7C5CFC 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 18px rgba(77, 54, 196, 0.45);
+}
+
+button.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 26px rgba(77, 54, 196, 0.55);
+}
+
+button.primary:active {
+  transform: translateY(0);
+}
+
+button.secondary {
+  background: var(--color-elevated);
+  color: var(--color-fg);
+  border: 0.8px solid var(--border-hairline-strong);
+  box-shadow: none;
+}
+
+button.secondary:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  transform: translateY(-1px);
+}
+
+/* Loading state */
+.loading {
+  display: none;
+  text-align: center;
+  padding: 20px;
+  width: 100%;
+}
+
+.spinner {
+  border: 3px solid var(--border-hairline-strong);
+  border-top: 3px solid var(--color-agent-tool);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  animation: spin 0.9s linear infinite;
+  margin: 0 auto 12px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+  color: var(--color-muted-fg);
+  font-size: 12.5px;
+  font-family: var(--font-mono);
+}
+
+/* Results container */
+#results {
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Grid layouts */
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-gap-lg);
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-gap-lg);
+}
+
+/* Spec container (reference signals) */
+.spec-container {
+  position: relative;
+  background: var(--color-panel-alt);
+  border-radius: var(--radius-panel);
+  padding: 16px;
+  border: 0.8px solid var(--border-hairline);
+  transition: border-color 0.2s ease;
+}
+
+.spec-container:hover {
+  border-color: var(--color-accent);
+}
+
+.spec-container strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: var(--color-fg);
+}
+
+/* Light inset frame so light-background PNG plots stay readable on dark cards */
+.spec-frame {
+  background: var(--spec-frame-bg);
+  border: 0.8px solid var(--spec-frame-border);
+  border-radius: 12px;
+  padding: 10px;
+  overflow: hidden;
+}
+
+.spec-container img,
+.spec-frame img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 6px;
+}
+
+.audio-controls {
+  text-align: center;
+  margin-top: 12px;
+}
+
+/* ============================================================
+   Enhancer cards
+   ============================================================ */
+.enhancer-card {
+  background: var(--color-panel-dark);
+  border-radius: var(--radius-panel);
+  overflow: hidden;
+  border: 0.8px solid var(--border-hairline);
+  box-shadow: var(--shadow-panel);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.enhancer-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-panel-hover);
+  border-color: var(--border-hairline-strong);
+}
+
+.enhancer-header {
+  padding: 14px 18px;
+  background: var(--color-secondary-surface);
+  border-bottom: 0.8px solid var(--border-hairline);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.enhancer-name {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--color-fg);
+}
+
+.method-badge {
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-size: 10.5px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border: 0.8px solid transparent;
+}
+
+.method-badge.baseline {
+  background: var(--method-baseline-bg);
+  border-color: var(--method-baseline-border);
+  color: var(--method-baseline);
+}
+
+.method-badge.aggressive {
+  background: var(--method-aggressive-bg);
+  border-color: var(--method-aggressive-border);
+  color: var(--method-aggressive);
+}
+
+.method-badge.demucs {
+  background: var(--method-demucs-bg);
+  border-color: var(--method-demucs-border);
+  color: var(--method-demucs);
+}
+
+.enhancer-content {
+  padding: 18px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.enhancer-content .spec-frame {
+  margin-bottom: 14px;
+}
+
+/* Metrics */
+.metrics {
+  margin: 14px 0 0;
+}
+
+.metrics strong {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: var(--color-muted-fg);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-family: var(--font-mono);
+}
+
+.metric {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 0;
+  border-bottom: 0.8px solid var(--border-hairline);
+  font-size: 12.5px;
+  gap: 8px;
+}
+
+.metric:last-child {
+  border-bottom: none;
+}
+
+.metric-label {
+  font-weight: 500;
+  color: var(--color-fg);
+  flex: 1;
+  min-width: 0;
+}
+
+.metric-values {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+.metric-before {
+  color: var(--color-muted-fg);
+  font-size: 11.5px;
+  font-family: var(--font-mono);
+}
+
+.metric-after {
+  font-weight: 700;
+  font-family: var(--font-mono);
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--color-elevated);
+  color: var(--color-fg);
+  min-width: 46px;
+  text-align: right;
+  font-size: 12px;
+}
+
+.metric-after.improved {
+  background: var(--color-agent-success-bg);
+  color: var(--color-agent-success);
+}
+
+.metric-after.degraded {
+  background: var(--color-agent-error-bg);
+  color: var(--color-agent-error);
+}
+
+.improvement-badge {
+  font-weight: 700;
+  font-size: 13px;
+  width: 16px;
+  text-align: center;
+}
+
+.improvement-badge.up {
+  color: var(--color-agent-success);
+}
+
+.improvement-badge.down {
+  color: var(--color-agent-error);
+}
+
+/* Risk box */
+.risk-box {
+  margin-top: 16px;
+  padding: 16px;
+  background: var(--color-info-banner-bg);
+  border: 0.8px solid var(--color-info-banner-border);
+  border-radius: var(--radius-panel);
+  font-weight: 600;
+  text-align: center;
+}
+
+.risk-label {
+  font-size: 10.5px;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-muted-fg);
+  margin-bottom: 8px;
+}
+
+.risk-values {
+  font-size: 16px;
+  font-family: var(--font-mono);
+  color: var(--color-fg);
+}
+
+.risk-delta {
+  font-size: 12px;
+  margin-top: 10px;
+  padding: 8px;
+  background: var(--color-elevated);
+  border-radius: var(--radius-pill);
+  color: var(--color-muted-fg);
+}
+
+.risk-delta.improved {
+  background: var(--color-agent-success-bg);
+  color: var(--color-agent-success);
+  font-weight: 700;
+}
+
+.risk-delta.degraded {
+  background: var(--color-agent-error-bg);
+  color: var(--color-agent-error);
+  font-weight: 700;
+}
+
+/* Footer */
+footer {
+  margin-top: 32px;
+  text-align: center;
+  font-size: 11.5px;
+  font-family: var(--font-mono);
+  color: var(--color-muted-fg);
+  padding: 20px;
+  border-top: 0.8px solid var(--border-hairline);
+}
+
+/* Audio player (hidden, controlled via JS) */
+audio {
+  display: none;
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width: 1024px) {
+  .grid-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  body {
+    padding: 14px;
+  }
+
+  .topbar {
+    padding: 12px 14px;
+  }
+
+  .brand-text h1 {
+    font-size: 15px;
+  }
+
+  .card {
+    padding: 18px;
+  }
+
+  .grid-2,
+  .grid-3 {
+    grid-template-columns: 1fr;
+  }
+
+  .upload-section,
+  .record-section {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .upload-section label,
+  .record-section label {
+    text-align: center;
+  }
+
+  button {
+    width: 100%;
+  }
+
+  .loading {
+    order: 99;
+  }
+
+  .rec-timer {
+    text-align: center;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="page">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2 12H5.5L7.5 6L11 18L13.5 9L15 12H22" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <h1>ClinAware</h1>
+        <p class="wordmark-sub">Speech Enhancement &middot; Clinical Awareness</p>
+      </div>
+    </div>
+
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" aria-label="Toggle light / dark mode" title="Toggle light / dark mode">
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.8"/>
+        <path d="M12 2.5V4.5M12 19.5V21.5M4.22 4.22L5.64 5.64M18.36 18.36L19.78 19.78M2.5 12H4.5M19.5 12H21.5M4.22 19.78L5.64 18.36M18.36 5.64L19.78 4.22" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.8 6.8 0 0 0 10.5 10.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="page-intro">
+    <p class="subtitle">Interactive demo showing how enhancement methods impact clinically relevant speech features.</p>
+    <div class="disclaimer">
+      <svg class="disclaimer-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/>
+        <path d="M12 11V17" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+        <circle cx="12" cy="7.8" r="1" fill="currentColor"/>
+      </svg>
+      <span><strong>Not for diagnosis.</strong> This demo presents risk score as a sensitivity probe grounded in known speech biomarkers and designed to expose enhancement&#8209;induced feature drift. It does not perform medical diagnosis. The system is modular and supports additional acoustic, linguistic, or articulatory features, enabling extension to richer biomarker sets.</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="upload-section">
+      <label for="fileInput">Upload WAV file</label>
+      <input type="file" id="fileInput" accept=".wav,.mp3,.ogg,.flac" />
+      <button class="primary" onclick="analyzeFile()">&#9654; Analyze Audio</button>
+    </div>
+
+    <div class="input-divider">or record live</div>
+
+    <div class="record-section">
+      <label>Live Microphone</label>
+      <button class="record" id="recBtn" onclick="toggleRecording()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="9" y="2" width="6" height="13" rx="3" stroke="currentColor" stroke-width="1.8"/>
+          <path d="M5 10C5 14.418 8.134 18 12 18C15.866 18 19 14.418 19 10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M12 18V22" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+        <span id="recLabel">Record</span>
+        <span class="rec-dot"></span>
+      </button>
+      <span class="rec-timer" id="recTimer">0:00</span>
+    </div>
+
+    <div class="noise-toggle-row">
+      <label for="noiseToggle">
+        <span class="switch">
+          <input type="checkbox" id="noiseToggle" checked onchange="onNoiseToggleChange()" />
+          <span class="switch-track"></span>
+        </span>
+        Add synthetic noise (+5&nbsp;dB white noise)
+      </label>
+      <span class="noise-toggle-hint" id="noiseToggleHint">Off = analyze the recording/upload exactly as captured</span>
+    </div>
+
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <div class="loading-text" id="loadingText">Processing enhancement methods&hellip;</div>
+    </div>
+  </div>
+
+  <div id="results" style="display:none;">
+
+    <!-- Reference Signals -->
+    <div class="card">
+      <h2>
+        <svg class="h2-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 12H6.5L8.5 5L12.5 19L15 9L16.5 12H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Reference Signals
+      </h2>
+      <div class="grid-2">
+        <div class="spec-container">
+          <strong>Clean Signal (Reference)</strong>
+          <div class="spec-frame"><img id="specClean" /></div>
+          <div class="audio-controls">
+            <button class="secondary" onclick="play('clean')">&#9654; Play Clean</button>
+          </div>
+        </div>
+
+        <div class="spec-container">
+          <strong id="noisyLabel">Noisy Signal (Before Enhancement)</strong>
+          <div class="spec-frame"><img id="specNoisy" /></div>
+          <div class="audio-controls">
+            <button class="secondary" onclick="play('noisy')">&#9654; Play Noisy</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Enhancer Comparison -->
+    <div class="card">
+      <h2>
+        <svg class="h2-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13 2L4 14H11L10 22L20 9H13L13 2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+        Enhancement Comparison
+      </h2>
+      <div class="grid-3" id="enhancerGrid"></div>
+    </div>
+
+  </div>
+
+  <footer>
+    Only for illustrative risk indicators and not for medical diagnosis.
+  </footer>
+
+</div>
+
+<audio id="player"></audio>
+
+<script>
+let audioUrls = {};
+let noisyRisk = 0.0;
+let lastAnalyzedFile = null;
+
+/* ---- Theme handling ---- */
+function applyTheme(theme) {
+  if (theme === 'light') {
+    document.documentElement.setAttribute('data-theme', 'light');
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+  }
+}
+
+function toggleTheme() {
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  const next = isLight ? 'dark' : 'light';
+  applyTheme(next);
+  localStorage.setItem('clinaware-theme', next);
+}
+
+(function initTheme() {
+  const stored = localStorage.getItem('clinaware-theme');
+  applyTheme(stored === 'light' ? 'light' : 'dark');
+})();
+
+/* ---- WAV encoder (float32 PCM → WAV ArrayBuffer) ---- */
+function encodeWAV(samples, sampleRate) {
+  const numSamples = samples.length;
+  const buf = new ArrayBuffer(44 + numSamples * 2);
+  const view = new DataView(buf);
+  const writeStr = (offset, str) => { for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i)); };
+  writeStr(0, 'RIFF');
+  view.setUint32(4, 36 + numSamples * 2, true);
+  writeStr(8, 'WAVE');
+  writeStr(12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);   // PCM
+  view.setUint16(22, 1, true);   // mono
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * 2, true);
+  view.setUint16(32, 2, true);
+  view.setUint16(34, 16, true);
+  writeStr(36, 'data');
+  view.setUint32(40, numSamples * 2, true);
+  let off = 44;
+  for (let i = 0; i < numSamples; i++) {
+    const s = Math.max(-1, Math.min(1, samples[i]));
+    view.setInt16(off, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+    off += 2;
+  }
+  return buf;
+}
+
+async function blobToWavFile(blob) {
+  const arrayBuf = await blob.arrayBuffer();
+  const ctx = new AudioContext();
+  const decoded = await ctx.decodeAudioData(arrayBuf);
+  await ctx.close();
+  // Downsample to 16 kHz mono via OfflineAudioContext
+  const targetSR = 16000;
+  const length = Math.ceil(decoded.duration * targetSR);
+  const offCtx = new OfflineAudioContext(1, length, targetSR);
+  const src = offCtx.createBufferSource();
+  src.buffer = decoded;
+  src.connect(offCtx.destination);
+  src.start(0);
+  const rendered = await offCtx.startRendering();
+  const wavBuf = encodeWAV(rendered.getChannelData(0), targetSR);
+  return new File([wavBuf], 'recording.wav', { type: 'audio/wav' });
+}
+
+/* ---- Microphone recording ---- */
+let mediaRecorder = null;
+let recChunks = [];
+let recTimerInterval = null;
+let recStartTime = 0;
+
+function updateRecTimer() {
+  const secs = Math.floor((Date.now() - recStartTime) / 1000);
+  const m = Math.floor(secs / 60);
+  const s = String(secs % 60).padStart(2, '0');
+  document.getElementById('recTimer').textContent = `${m}:${s}`;
+}
+
+async function toggleRecording() {
+  const btn = document.getElementById('recBtn');
+  const label = document.getElementById('recLabel');
+  const timer = document.getElementById('recTimer');
+
+  if (mediaRecorder && mediaRecorder.state === 'recording') {
+    // Stop recording
+    mediaRecorder.stop();
+    return;
+  }
+
+  // Start recording
+  let stream;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+  } catch (err) {
+    alert('Microphone access denied. Please allow microphone access and try again.');
+    return;
+  }
+
+  recChunks = [];
+  mediaRecorder = new MediaRecorder(stream);
+
+  mediaRecorder.ondataavailable = e => { if (e.data.size > 0) recChunks.push(e.data); };
+
+  mediaRecorder.onstart = () => {
+    btn.classList.add('recording');
+    label.textContent = 'Stop Recording';
+    timer.classList.add('active');
+    recStartTime = Date.now();
+    recTimerInterval = setInterval(updateRecTimer, 500);
+  };
+
+  mediaRecorder.onstop = async () => {
+    // Restore button
+    btn.classList.remove('recording');
+    label.textContent = 'Record';
+    timer.classList.remove('active');
+    timer.textContent = '0:00';
+    clearInterval(recTimerInterval);
+
+    // Stop mic tracks
+    stream.getTracks().forEach(t => t.stop());
+
+    // Convert to WAV and analyze
+    const blob = new Blob(recChunks, { type: mediaRecorder.mimeType });
+    try {
+      document.getElementById('loadingText').textContent = 'Encoding recording…';
+      document.getElementById('loading').style.display = 'block';
+      const wavFile = await blobToWavFile(blob);
+      lastAnalyzedFile = wavFile;
+      document.getElementById('loadingText').textContent = 'Processing enhancement methods…';
+      await runAnalysis(wavFile);
+    } catch (err) {
+      console.error('Recording error:', err);
+      alert('Failed to process recording: ' + err.message);
+      document.getElementById('loading').style.display = 'none';
+    }
+  };
+
+  mediaRecorder.start();
+}
+
+/* ---- File upload analyze ---- */
+function analyzeFile() {
+  const file = document.getElementById('fileInput').files[0];
+  if (!file) { alert('Please select a WAV file first.'); return; }
+  lastAnalyzedFile = file;
+  document.getElementById('loadingText').textContent = 'Processing enhancement methods…';
+  document.getElementById('loading').style.display = 'block';
+  runAnalysis(file);
+}
+
+/* ---- Noise toggle: re-run analysis on the same audio, no re-upload/re-record needed ---- */
+function onNoiseToggleChange() {
+  if (!lastAnalyzedFile) return; // nothing analyzed yet — toggle just sets the default for next run
+  document.getElementById('loadingText').textContent = 'Re-analyzing…';
+  document.getElementById('loading').style.display = 'block';
+  runAnalysis(lastAnalyzedFile);
+}
+
+/* ---- Core analysis (shared by upload + recording) ---- */
+async function runAnalysis(file) {
+  try {
+    const addNoise = document.getElementById('noiseToggle').checked;
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('add_noise', addNoise ? 'true' : 'false');
+
+    const res = await fetch('/analyze', { method: 'POST', body: fd });
+    if (!res.ok) throw new Error(`Server error ${res.status}`);
+    const data = await res.json();
+
+    console.log('Backend response:', data);
+
+    document.getElementById('results').style.display = 'block';
+
+    document.getElementById('specClean').src = 'data:image/png;base64,' + data.common.spectrograms.clean;
+    document.getElementById('specNoisy').src = 'data:image/png;base64,' + data.common.spectrograms.noisy;
+    document.getElementById('noisyLabel').textContent = data.common.add_noise_applied
+      ? 'Noisy Signal (Synthetic +5dB, Before Enhancement)'
+      : 'Input Signal (As Captured, Before Enhancement)';
+
+    audioUrls.clean = data.common.audio.clean;
+    audioUrls.noisy = data.common.audio.noisy;
+    noisyRisk = data.common.risk_noisy;
+
+    const grid = document.getElementById('enhancerGrid');
+    grid.innerHTML = '';
+
+    for (const [name, e] of Object.entries(data.enhancers)) {
+      if (!e.spectrograms || !e.spectrograms.enhanced) {
+        console.warn('Missing spectrogram for', name);
+        continue;
+      }
+
+      audioUrls[name] = e.audio.enhanced;
+
+      const b = e.biomarkers.before;
+      const a = e.biomarkers.after;
+
+      const metrics = [
+        { label: '⏸ Pause ratio',             before: b.pause_ratio,            after: a.pause_ratio },
+        { label: '📈 F0 mean (Hz)',             before: b.f0_mean,                after: a.f0_mean },
+        { label: '📊 F0 std (Hz)',              before: b.f0_std,                 after: a.f0_std },
+        { label: '🎵 Spectral centroid std',    before: b.spectral_centroid_std,  after: a.spectral_centroid_std },
+        { label: '〰️ Jitter',                  before: b.jitter,                 after: a.jitter },
+        { label: '📉 Shimmer',                 before: b.shimmer,                after: a.shimmer },
+        { label: '🗣 Speaking rate (syll/s)',   before: b.speaking_rate,          after: a.speaking_rate }
+      ];
+
+      let metricsHTML = '<strong>Biomarkers</strong>';
+      for (const m of metrics) {
+        const imp = getImprovementIndicator(m.before, m.after);
+        const afterClass = imp.status === 'improved' ? 'improved' : (imp.status === 'degraded' ? 'degraded' : '');
+        const decimals = m.before >= 1 ? 1 : 2;
+        metricsHTML += `
+          <div class="metric">
+            <span class="metric-label">${m.label}</span>
+            <div class="metric-values">
+              <span class="metric-before">${m.before.toFixed(decimals)}</span>
+              <span class="improvement-badge ${imp.status === 'improved' ? 'up' : (imp.status === 'degraded' ? 'down' : '')}">${imp.icon}</span>
+              <span class="metric-after ${afterClass}">${m.after.toFixed(decimals)}</span>
+            </div>
+          </div>`;
+      }
+
+      const riskDelta = e.risk.after - noisyRisk;
+      const riskPercentage = ((riskDelta / noisyRisk) * 100).toFixed(0);
+      const riskStatus = riskDelta < 0 ? 'improved' : (riskDelta > 0 ? 'degraded' : 'neutral');
+      const riskText = riskStatus === 'improved'
+        ? `Risk reduced by ${Math.abs(riskPercentage)}%`
+        : (riskStatus === 'degraded' ? `Risk increased by ${riskPercentage}%` : 'No change');
+
+      grid.innerHTML += `
+        <div class="enhancer-card">
+          <div class="enhancer-header">
+            <span class="enhancer-name">${name.toUpperCase()}</span>
+            <span class="method-badge ${name}">${name}</span>
+          </div>
+          <div class="enhancer-content">
+            <div class="spec-frame">
+              <img src="data:image/png;base64,${e.spectrograms.enhanced}" />
+            </div>
+            <div class="audio-controls">
+              <button class="secondary" onclick="play('${name}')">&#9654; Play Enhanced</button>
+            </div>
+            <div class="metrics">${metricsHTML}</div>
+            <div class="risk-box">
+              <div class="risk-label">Risk Score (Noisy &rarr; Enhanced)</div>
+              <div class="risk-values">${noisyRisk.toFixed(3)} &rarr; ${e.risk.after.toFixed(3)}</div>
+              <div class="risk-delta ${riskStatus}">${riskText}</div>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  } catch (error) {
+    console.error('Error:', error);
+    alert('Error during analysis. Check console for details.');
+  } finally {
+    document.getElementById('loading').style.display = 'none';
+  }
+}
+
+function getImprovementIndicator(before, after) {
+  const delta = after - before;
+  const percentChange = ((delta / (before || 1)) * 100).toFixed(0);
+  if (delta > 0.01)  return { icon: '↑', status: 'improved', change: `+${percentChange}%` };
+  if (delta < -0.01) return { icon: '↓', status: 'degraded', change: `${percentChange}%` };
+  return { icon: '→', status: 'neutral', change: '~' };
+}
+
+function play(key) {
+  const p = document.getElementById('player');
+  p.src = audioUrls[key];
+  p.play();
+}
+</script>
+
+</body>
+</html>
